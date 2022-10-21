@@ -1,7 +1,8 @@
 package com.bgsoftware.superiorskyblock.core;
 
 import com.bgsoftware.superiorskyblock.SuperiorSkyblockPlugin;
-import com.google.common.base.Objects;
+import com.bgsoftware.superiorskyblock.api.island.Island;
+import com.bgsoftware.superiorskyblock.api.wrappers.BlockPosition;
 import org.bukkit.Location;
 
 public class IslandPosition {
@@ -10,21 +11,26 @@ public class IslandPosition {
 
     private final int x;
     private final int z;
-    private final String worldName;
 
-    private IslandPosition(int x, int z, String worldName) {
+    private IslandPosition(int x, int z) {
         this.x = x;
         this.z = z;
-        this.worldName = worldName;
     }
 
     public static IslandPosition of(Location location) {
+        return fromXZ(location.getBlockX(), location.getBlockZ());
+    }
+
+    public static IslandPosition of(Island island) {
+        BlockPosition center = island.getCenterPosition();
+        return fromXZ(center.getX(), center.getZ());
+    }
+
+    private static IslandPosition fromXZ(int locX, int locZ) {
         int radius = plugin.getSettings().getMaxIslandSize() * 3;
-        int x = (Math.abs(location.getBlockX()) + (radius / 2)) / radius;
-        int z = (Math.abs(location.getBlockZ()) + (radius / 2)) / radius;
-        String worldName = plugin.getProviders().hasCustomWorldsSupport() && location.getWorld() != null ?
-                location.getWorld().getName() : "";
-        return new IslandPosition(location.getBlockX() < 0 ? -x : x, location.getBlockZ() < 0 ? -z : z, worldName);
+        int x = (Math.abs(locX) + (radius / 2)) / radius;
+        int z = (Math.abs(locZ) + (radius / 2)) / radius;
+        return new IslandPosition(locX < 0 ? -x : x, locZ < 0 ? -z : z);
     }
 
     @Override
@@ -34,13 +40,12 @@ public class IslandPosition {
 
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof IslandPosition && x == ((IslandPosition) obj).x && z == ((IslandPosition) obj).z &&
-                worldName.equals(((IslandPosition) obj).worldName);
+        return obj instanceof IslandPosition && x == ((IslandPosition) obj).x && z == ((IslandPosition) obj).z;
     }
 
     @Override
     public String toString() {
-        return "IslandPosition{x=" + x + ",z=" + z + ", world=" + worldName + "}";
+        return "IslandPosition{x=" + x + ",z=" + z + "}";
     }
 
 }
